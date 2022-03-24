@@ -5,6 +5,7 @@ import { eventsMixin } from './events'
 import { lifecycleMixin } from './lifecycle'
 import { warn } from '../util/index'
 
+// Vue 原始定义
 function Vue (options) {
   if (process.env.NODE_ENV !== 'production' &&
     !(this instanceof Vue)
@@ -14,6 +15,7 @@ function Vue (options) {
   this._init(options)
 }
 
+// 在原型上添加各类方法 Vue.prototype
 initMixin(Vue)
 stateMixin(Vue)
 eventsMixin(Vue)

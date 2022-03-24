@@ -24,6 +24,7 @@ const weexFactoryPlugin = {
   }
 }
 
+// 解析配置中的路径，第一个参数是别名 alias
 const aliases = require('./alias')
 const resolve = p => {
   const base = p.split('/')[0]
@@ -34,6 +35,7 @@ const resolve = p => {
   }
 }
 
+// 编译不同版本的配置文件
 const builds = {
   // Runtime only (CommonJS). Used by bundlers e.g. Webpack & Browserify
   'web-runtime-cjs-dev': {
@@ -213,6 +215,7 @@ const builds = {
   }
 }
 
+// 最终转换成 rollup 需要的配置
 function genConfig (name) {
   const opts = builds[name]
   const config = {

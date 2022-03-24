@@ -8,11 +8,12 @@ if (!fs.existsSync('dist')) {
   fs.mkdirSync('dist')
 }
 
+// 获取所有编译case的 rollup 配置文件
 let builds = require('./config').getAllBuilds()
 
-// filter builds via command line arg
+// filter builds via command line arg. 根据命令行参数过滤编译case
 if (process.argv[2]) {
-  const filters = process.argv[2].split(',')
+  const filters = process.argv[2].split(',') 
   builds = builds.filter(b => {
     return filters.some(f => b.output.file.indexOf(f) > -1 || b._name.indexOf(f) > -1)
   })
@@ -25,6 +26,7 @@ if (process.argv[2]) {
 
 build(builds)
 
+// 根据配置文件数组，逐个编译
 function build (builds) {
   let built = 0
   const total = builds.length
@@ -40,6 +42,7 @@ function build (builds) {
   next()
 }
 
+// 单个编译
 function buildEntry (config) {
   const output = config.output
   const { file, banner } = output
@@ -64,6 +67,7 @@ function buildEntry (config) {
     })
 }
 
+// 写文件
 function write (dest, code, zip) {
   return new Promise((resolve, reject) => {
     function report (extra) {

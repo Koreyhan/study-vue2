@@ -26,13 +26,14 @@ const ALWAYS_NORMALIZE = 2
 // wrapper function for providing a more flexible interface
 // without getting yelled at by flow
 export function createElement (
-  context: Component,
+  context: Component, // vm 实例
   tag: any,
   data: any,
   children: any,
   normalizationType: any,
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
+  // 函数重载，满足参数个数不同的情况
   if (Array.isArray(data) || isPrimitive(data)) {
     normalizationType = children
     children = data
@@ -45,12 +46,16 @@ export function createElement (
 }
 
 export function _createElement (
-  context: Component,
-  tag?: string | Class<Component> | Function | Object,
-  data?: VNodeData,
-  children?: any,
-  normalizationType?: number
+  context: Component, // vnode 上下文环境
+  tag?: string | Class<Component> | Function | Object, // 标签
+  data?: VNodeData, // vnode 的数据(VNodeData)
+  children?: any, // 子节点
+  normalizationType?: number // 子节点规范的类型
 ): VNode | Array<VNode> {
+  /**
+   * 下面是各种校验
+   */
+  // 校验参数，不能是响应式的 => 返回空vode
   if (isDef(data) && isDef((data: any).__ob__)) {
     process.env.NODE_ENV !== 'production' && warn(
       `Avoid using observed data object as vnode data: ${JSON.stringify(data)}\n` +
@@ -87,17 +92,20 @@ export function _createElement (
     data.scopedSlots = { default: children[0] }
     children.length = 0
   }
+  // 将 child 字段中的数据都转换为 vnode; 多维数组打平
   if (normalizationType === ALWAYS_NORMALIZE) {
     children = normalizeChildren(children)
   } else if (normalizationType === SIMPLE_NORMALIZE) {
     children = simpleNormalizeChildren(children)
   }
+  // 这里开始正式创建 vnode
   let vnode, ns
   if (typeof tag === 'string') {
     let Ctor
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
     if (config.isReservedTag(tag)) {
-      // platform built-in elements
+      // platform built-in elements.
+      // 创建 HTML 节点 vnode
       vnode = new VNode(
         config.parsePlatformTagName(tag), data, children,
         undefined, undefined, context

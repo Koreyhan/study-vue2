@@ -3,6 +3,7 @@
 import config from 'core/config'
 import { warn, makeMap, isNative } from '../util/index'
 
+// 主要是在开发环境时，给访问数据时集成一些报错
 let initProxy
 
 if (process.env.NODE_ENV !== 'production') {
@@ -52,6 +53,7 @@ if (process.env.NODE_ENV !== 'production') {
     })
   }
 
+  // 访问没有定义的值 => 报错 warnNonPresent
   const hasHandler = {
     has (target, key) {
       const has = key in target

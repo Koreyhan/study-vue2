@@ -14,14 +14,17 @@ const idToTemplate = cached(id => {
   return el && el.innerHTML
 })
 
+// 原型上的方法主要是基于 render 函数去挂载 (runtime only 版本可直接用)
+// 这里重写附加功能：将 el、template 等转换成 render 函数（该功能仅在有 complier 的版本存在）
 const mount = Vue.prototype.$mount
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
-  el = el && query(el)
+  el = el && query(el) // 获取 el 节点
 
   /* istanbul ignore if */
+  // 特殊节点检测报错
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
@@ -31,6 +34,7 @@ Vue.prototype.$mount = function (
 
   const options = this.$options
   // resolve template/el and convert to render function
+  // 不管传入的什么形式，最终都会生成 render 函数
   if (!options.render) {
     let template = options.template
     if (template) {
@@ -54,8 +58,10 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      // 获取 template，字符串格式
       template = getOuterHTML(el)
     }
+    // 把 template 编译成 render 函数
     if (template) {
       /* istanbul ignore if */
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {

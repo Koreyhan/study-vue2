@@ -35,6 +35,7 @@ const sharedPropertyDefinition = {
   set: noop
 }
 
+// 通过 defineProperty 代理数据访问
 export function proxy (target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
@@ -51,6 +52,7 @@ export function initState (vm: Component) {
   if (opts.props) initProps(vm, opts.props)
   if (opts.methods) initMethods(vm, opts.methods)
   if (opts.data) {
+    // 初始化数据
     initData(vm)
   } else {
     observe(vm._data = {}, true /* asRootData */)
@@ -109,11 +111,13 @@ function initProps (vm: Component, propsOptions: Object) {
   toggleObserving(true)
 }
 
+// 初始化 data 数据
 function initData (vm: Component) {
   let data = vm.$options.data
-  data = vm._data = typeof data === 'function'
+  data = vm._data = typeof data === 'function' // 获取函数式 data，赋值到 _data
     ? getData(data, vm)
     : data || {}
+  // 如果不是对象抛出警告
   if (!isPlainObject(data)) {
     data = {}
     process.env.NODE_ENV !== 'production' && warn(
@@ -128,6 +132,8 @@ function initData (vm: Component) {
   const methods = vm.$options.methods
   let i = keys.length
   while (i--) {
+    // 检测如果 data 和 props 中有重名key，抛出警告
+    // 最终通过 proxy 方法挂载到 vm 上
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
       if (methods && hasOwn(methods, key)) {
@@ -144,6 +150,8 @@ function initData (vm: Component) {
         vm
       )
     } else if (!isReserved(key)) {
+      // 重点：定义 data 上的属性，通过 defineProperty 代理。
+      // 代理访问的数据实际上在 vm._data 上
       proxy(vm, `_data`, key)
     }
   }

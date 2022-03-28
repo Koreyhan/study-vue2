@@ -108,7 +108,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     if (vm._isBeingDestroyed) {
       return
     }
-    callHook(vm, 'beforeDestroy')
+    callHook(vm, 'beforeDestroy') // @ beforeDestroy
     vm._isBeingDestroyed = true
     // remove self from parent
     const parent = vm.$parent
@@ -131,9 +131,10 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // call the last hook...
     vm._isDestroyed = true
     // invoke destroy hooks on current rendered tree
+    // 递归完成组件销毁
     vm.__patch__(vm._vnode, null)
     // fire destroyed hook
-    callHook(vm, 'destroyed')
+    callHook(vm, 'destroyed') // @ destroyed
     // turn off all instance listeners.
     vm.$off()
     // remove __vue__ reference
@@ -175,7 +176,7 @@ export function mountComponent (
       }
     }
   }
-  callHook(vm, 'beforeMount')
+  callHook(vm, 'beforeMount') //  @ beforeMount
 
   let updateComponent
   /* istanbul ignore if */
@@ -227,7 +228,7 @@ export function mountComponent (
   // mounted is called for render-created child components in its inserted hook
   if (vm.$vnode == null) {
     vm._isMounted = true
-    callHook(vm, 'mounted')
+    callHook(vm, 'mounted') // @ mounted 根组件
   }
   return vm
 }
@@ -339,6 +340,9 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
+/**
+ * 内部生命周期调用函数
+ */
 export function callHook (vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget()

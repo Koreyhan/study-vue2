@@ -54,7 +54,7 @@ function flushSchedulerQueue () {
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
     if (watcher.before) {
-      watcher.before()
+      watcher.before() // @ beforeUpdate
     }
     id = watcher.id
     has[id] = null
@@ -99,7 +99,7 @@ function callUpdatedHooks (queue) {
     const watcher = queue[i]
     const vm = watcher.vm
     if (vm._watcher === watcher && vm._isMounted && !vm._isDestroyed) {
-      callHook(vm, 'updated')
+      callHook(vm, 'updated') // @ updated
     }
   }
 }

@@ -71,7 +71,7 @@ const componentVNodeHooks = {
     const { context, componentInstance } = vnode
     if (!componentInstance._isMounted) {
       componentInstance._isMounted = true
-      callHook(componentInstance, 'mounted')
+      callHook(componentInstance, 'mounted') // @ mounted 组件触发
     }
     if (vnode.data.keepAlive) {
       if (context._isMounted) {
@@ -80,7 +80,7 @@ const componentVNodeHooks = {
         // change, so directly walking the tree here may call activated hooks
         // on incorrect children. Instead we push them into a queue which will
         // be processed after the whole patch process ended.
-        queueActivatedComponent(componentInstance)
+        queueActivatedComponent(componentInstance) // 最终会 @ updated
       } else {
         activateChildComponent(componentInstance, true /* direct */)
       }

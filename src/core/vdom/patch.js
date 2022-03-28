@@ -821,6 +821,8 @@ export function createPatchFunction (backend) {
       }
     }
 
+    // 调用插入的钩子， 触发 mounted。
+    // 等待父子组件全都插入到DOM中后，依次触发钩子。队列先子后父
     invokeInsertHook(vnode, insertedVnodeQueue, isInitialPatch)
     return vnode.elm
   }

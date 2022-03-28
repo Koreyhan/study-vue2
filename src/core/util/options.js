@@ -118,6 +118,7 @@ export function mergeDataOrFn (
   }
 }
 
+// data 合并策略
 strats.data = function (
   parentVal: any,
   childVal: any,
@@ -169,6 +170,7 @@ function dedupeHooks (hooks) {
   return res
 }
 
+// 声明周期 合并策略
 LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook
 })
@@ -195,12 +197,13 @@ function mergeAssets (
   }
 }
 
+// 静态方法(component、directive、filter) 合并策略
 ASSET_TYPES.forEach(function (type) {
   strats[type + 's'] = mergeAssets
 })
 
 /**
- * Watchers.
+ * Watchers. watch 合并策略
  *
  * Watchers hashes should not overwrite one
  * another, so we merge them as arrays.
@@ -236,7 +239,7 @@ strats.watch = function (
 }
 
 /**
- * Other object hashes.
+ * Other object hashes. 其他的一些合并策略
  */
 strats.props =
 strats.methods =
@@ -382,6 +385,7 @@ function assertObjectType (name: string, value: any, vm: ?Component) {
 }
 
 /**
+ * 主要功能是把 child 和 parent 做合并
  * Merge two option objects into a new one.
  * Core utility used in both instantiation and inheritance.
  */
@@ -417,6 +421,8 @@ export function mergeOptions (
     }
   }
 
+  // 主要的合并步骤
+  // 单个key的合并逻辑在 strats 对象中
   const options = {}
   let key
   for (key in parent) {

@@ -29,12 +29,17 @@ export function initMixin (Vue: Class<Component>) {
 
     // a flag to avoid this being observed
     vm._isVue = true
-    // merge options 合并 options
+    // merge options
+    // * 合并 options
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
-      // 创建组件时会走到这里，设置 _parentVnode、parent 相关属性
+      /**
+       * 创建组件时会走到这里，设置 _parentVnode、parent 相关属性
+       * vm: 新组件的实例 this，在构造函数(this.constructor 或 Sub)中有 options 属性为该组件的配置项
+       * options: 父组件patch时传过来配置项 { _isComponent: true,  _parentVnode(父组件vnode), parent(父组件实例) }
+       */
       initInternalComponent(vm, options)
     } else {
       vm.$options = mergeOptions(
@@ -74,6 +79,7 @@ export function initMixin (Vue: Class<Component>) {
   }
 }
 
+// 初始化组件时的配置合并
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
   const opts = vm.$options = Object.create(vm.constructor.options)
   // doing this because it's faster than dynamic enumeration.

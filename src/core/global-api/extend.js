@@ -15,6 +15,8 @@ export function initExtend (Vue: GlobalAPI) {
 
   /**
    * Class inheritance
+   * 构造一个 Vue 子类
+   * 功能：原型继承；扩展属性（如：options）；添加全局API；缓存；
    */
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
@@ -25,14 +27,17 @@ export function initExtend (Vue: GlobalAPI) {
       return cachedCtors[SuperId]
     }
 
+    // 校验组件 name 命名
     const name = extendOptions.name || Super.options.name
     if (process.env.NODE_ENV !== 'production' && name) {
       validateComponentName(name)
     }
 
+    // 定义子构造函数
     const Sub = function VueComponent (options) {
       this._init(options)
     }
+    // 原型继承
     Sub.prototype = Object.create(Super.prototype)
     Sub.prototype.constructor = Sub
     Sub.cid = cid++

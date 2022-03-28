@@ -34,6 +34,7 @@ import {
 
 // inline hooks to be invoked on component VNodes during patch
 const componentVNodeHooks = {
+  // 组件 init，最终会执行到 Vue.prototype._init 方法上
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
       vnode.componentInstance &&
@@ -44,10 +45,12 @@ const componentVNodeHooks = {
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
+      // 这里进入子组件实例创建过程，会走实例 _init 方法，绑定关系
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         activeInstance
       )
+      // 子组件 $mount
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
   },
@@ -98,6 +101,10 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
+/**
+ * 创建子组件 vnode
+ * 主要功能：构造子类构造函数; 安装组件钩子函数; 实例化 vnode
+ */
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
@@ -109,9 +116,11 @@ export function createComponent (
     return
   }
 
+  // 基本上 context.$options._base === Vue
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
+  // 创建子类构造函数
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor)
   }
@@ -126,6 +135,7 @@ export function createComponent (
   }
 
   // async component
+  // 异步组件的处理
   let asyncFactory
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
@@ -183,9 +193,16 @@ export function createComponent (
   }
 
   // install component management hooks onto the placeholder node
+  // 安装组件钩子函数
   installComponentHooks(data)
 
   // return a placeholder vnode
+  /**
+   * 生成 vnode
+   * 有 'vue-component-' 标志
+   * 注意第三个参数 children 是空
+   * 真正的 children 数据在第七个参数(componentOptions)中
+   */
   const name = Ctor.options.name || tag
   const vnode = new VNode(
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
@@ -220,6 +237,7 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
+  // 这里执行了子组件的构造函数
   return new vnode.componentOptions.Ctor(options)
 }
 
@@ -229,12 +247,14 @@ function installComponentHooks (data: VNodeData) {
     const key = hooksToMerge[i]
     const existing = hooks[key]
     const toMerge = componentVNodeHooks[key]
+    // 钩子函数合并
     if (existing !== toMerge && !(existing && existing._merged)) {
       hooks[key] = existing ? mergeHook(toMerge, existing) : toMerge
     }
   }
 }
 
+// 合并钩子函数
 function mergeHook (f1: any, f2: any): Function {
   const merged = (a, b) => {
     // flow complains about extra args which is why we use any

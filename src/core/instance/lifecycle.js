@@ -38,9 +38,11 @@ export function initLifecycle (vm: Component) {
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
+    // 将子组件推入父组件 $children 中
     parent.$children.push(vm)
   }
 
+  // 子组件的 $parent 指向父组件
   vm.$parent = parent
   vm.$root = parent ? parent.$root : vm
 
@@ -64,7 +66,9 @@ export function lifecycleMixin (Vue: Class<Component>) {
     const vm: Component = this
     const prevEl = vm.$el
     const prevVnode = vm._vnode
+    // 11=> 记录当前实例到 activeInstance 中
     const restoreActiveInstance = setActiveInstance(vm)
+    // this._vnode 是该组件的 vnode
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
@@ -75,6 +79,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
       // updates. 数据更新
       vm.$el = vm.__patch__(prevVnode, vnode)
     }
+    // 11=> 通过 restore 恢复到之前的 activeInstance。
     restoreActiveInstance()
     // update __vue__ reference
     if (prevEl) {

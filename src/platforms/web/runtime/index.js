@@ -35,7 +35,7 @@ Vue.prototype.__patch__ = inBrowser ? patch : noop
 
 // public mount method - 初始定义 $mount
 Vue.prototype.$mount = function (
-  el?: string | Element,
+  el?: string | Element, // 根渲染时是元素；子组件 mount 时是空值；
   hydrating?: boolean
 ): Component {
   el = el && inBrowser ? query(el) : undefined

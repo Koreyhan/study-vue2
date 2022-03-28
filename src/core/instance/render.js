@@ -75,7 +75,7 @@ export function renderMixin (Vue: Class<Component>) {
 
     // set parent vnode. this allows render functions to have access
     // to the data on the placeholder node.
-    vm.$vnode = _parentVnode
+    vm.$vnode = _parentVnode // 在子组件中是 父vnode（占位符 vnode）
     // render self
     let vnode
     try {
@@ -115,6 +115,7 @@ export function renderMixin (Vue: Class<Component>) {
       vnode = createEmptyVNode()
     }
     // set parent
+    // 子组件 vnode.parent 指向父组件vnode
     vnode.parent = _parentVnode
     return vnode
   }

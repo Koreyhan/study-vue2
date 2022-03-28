@@ -146,6 +146,7 @@ export function createPatchFunction (backend) {
     }
 
     vnode.isRootInsert = !nested // for transition enter check
+    // 如果遇到子组件会进入这里，且子组件节点更新DOM会在这里面完成
     if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
       return
     }
@@ -198,7 +199,9 @@ export function createPatchFunction (backend) {
         if (isDef(data)) {
           invokeCreateHooks(vnode, insertedVnodeQueue)
         }
-        insert(parentElm, vnode.elm, refElm) // 插入DOM到父节点中
+        // 插入DOM到父节点中
+        // 渲染组件时：parentElm 是空的，则不插入
+        insert(parentElm, vnode.elm, refElm)
       }
 
       if (process.env.NODE_ENV !== 'production' && data && data.pre) {
@@ -213,17 +216,20 @@ export function createPatchFunction (backend) {
     }
   }
 
+  // 组件节点的创建DOM操作
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     if (isDef(i)) {
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
       if (isDef(i = i.hook) && isDef(i = i.init)) {
+        // 这里最终执行的是  vnode.data.hook.init 方法
         i(vnode, false /* hydrating */)
       }
       // after calling the init hook, if the vnode is a child component
       // it should've created a child instance and mounted it. the child
       // component also has set the placeholder vnode's elm.
       // in that case we can just return the element and be done.
+      // 组件创建完毕，插入到父节点中
       if (isDef(vnode.componentInstance)) {
         initComponent(vnode, insertedVnodeQueue)
         insert(parentElm, vnode.elm, refElm)
@@ -721,6 +727,7 @@ export function createPatchFunction (backend) {
 
     if (isUndef(oldVnode)) {
       // empty mount (likely as component), create new root element
+      // 子组件渲染会走到这里
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {

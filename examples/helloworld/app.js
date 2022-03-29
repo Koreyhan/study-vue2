@@ -13,19 +13,13 @@ var myComp = Vue.component('my-comp', {
   }
 })
 
-Vue.component('my-comp1', function (resolve) {
-  setTimeout(function () {
-    resolve({
-      render (h)  {
-        return h('p', '1212')
-      }
-    })
-  }, 1000)
-})
+console.log(myComp)
 
 var app = new Vue({
-  data: {
-    name: '丽丽'
+  data () {
+    return {
+      name: '丽丽'
+    }
   },
 
   mounted () {
@@ -35,11 +29,17 @@ var app = new Vue({
   methods: {
     removeTodo: function (todo) {
       this.todos.splice(this.todos.indexOf(todo), 1)
+    },
+    click () {
+      this.name = '乖乖'
     }
   },
   
   render (h) {
-    return h('section', { id: 'hah' }, ['根组件', h(myComp), h('my-comp1')])
+    return h('section', { id: 'hah' }, [
+      this.name,
+      h('button', { on: { click: this.click } }, '按钮')
+    ])
   }
 })
 

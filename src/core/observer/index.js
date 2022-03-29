@@ -43,15 +43,17 @@ export class Observer {
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
-    def(value, '__ob__', this)
+    def(value, '__ob__', this) // 定义 __ob__ 指向 Observer 实例
     if (Array.isArray(value)) {
       if (hasProto) {
         protoAugment(value, arrayMethods)
       } else {
         copyAugment(value, arrayMethods, arrayKeys)
       }
+      // 递归定义数组
       this.observeArray(value)
     } else {
+      // 递归定义对象
       this.walk(value)
     }
   }
@@ -112,6 +114,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     return
   }
   let ob: Observer | void
+  // 已经定义过的逻辑
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
@@ -121,6 +124,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     Object.isExtensible(value) &&
     !value._isVue
   ) {
+    // 满足上述条件，定义 Observer
     ob = new Observer(value)
   }
   if (asRootData && ob) {
@@ -130,6 +134,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 }
 
 /**
+ * 重点：定义响应式对象的底层代码
  * Define a reactive property on an Object.
  */
 export function defineReactive (
@@ -153,10 +158,12 @@ export function defineReactive (
     val = obj[key]
   }
 
-  let childOb = !shallow && observe(val)
+  let childOb = !shallow && observe(val) // ** 递归定义
+  // 重点: defineProperty 定义逻辑
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
+    // get 函数 - 依赖收集
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
@@ -170,6 +177,7 @@ export function defineReactive (
       }
       return value
     },
+    // set 函数 - 派发更新
     set: function reactiveSetter (newVal) {
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */

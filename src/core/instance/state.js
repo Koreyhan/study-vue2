@@ -63,6 +63,7 @@ export function initState (vm: Component) {
   }
 }
 
+// 初始化 props 数据
 function initProps (vm: Component, propsOptions: Object) {
   const propsData = vm.$options.propsData || {}
   const props = vm._props = {}
@@ -111,7 +112,11 @@ function initProps (vm: Component, propsOptions: Object) {
   toggleObserving(true)
 }
 
-// 初始化 data 数据
+/**
+ * 初始化 data 数据
+ * 1. 对一定 data 函数返回的对象遍历，通过 proxy 把每个值 vm._data.xx 代理到 VM.xx 上
+ * 2. 调用 observe 方法观测整个 data 的变化，把 data 也变成响应式的，可以通过 vm._data.xx 访问到定义 data 返回函数中的属性
+ */
 function initData (vm: Component) {
   let data = vm.$options.data
   data = vm._data = typeof data === 'function' // 获取函数式 data，赋值到 _data
@@ -132,7 +137,7 @@ function initData (vm: Component) {
   const methods = vm.$options.methods
   let i = keys.length
   while (i--) {
-    // 检测如果 data 和 props 中有重名key，抛出警告
+    // 检测如果 data 和 props、methods 中有重名key，抛出警告
     // 最终通过 proxy 方法挂载到 vm 上
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
@@ -150,7 +155,7 @@ function initData (vm: Component) {
         vm
       )
     } else if (!isReserved(key)) {
-      // 重点：定义 data 上的属性，通过 defineProperty 代理。
+      // 重点：通过 defineProperty，把 vm._data.xx 代理到 vm.xx 上
       // 代理访问的数据实际上在 vm._data 上
       proxy(vm, `_data`, key)
     }

@@ -1,6 +1,9 @@
 /* global Vue */
 
 var myComp = Vue.component('my-comp', {
+  mounted () {
+    console.log('my-comp', this)
+  },
   render (h) {
     return h('p', {
       style: {
@@ -8,6 +11,16 @@ var myComp = Vue.component('my-comp', {
       }
     }, 'app组件')
   }
+})
+
+Vue.component('my-comp1', function (resolve) {
+  setTimeout(function () {
+    resolve({
+      render (h)  {
+        return h('p', '1212')
+      }
+    })
+  }, 1000)
 })
 
 var app = new Vue({
@@ -26,7 +39,7 @@ var app = new Vue({
   },
   
   render (h) {
-    return h('section', { id: 'hah' }, ['根组件', h(myComp)])
+    return h('section', { id: 'hah' }, ['根组件', h(myComp), h('my-comp1')])
   }
 })
 

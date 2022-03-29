@@ -21,11 +21,12 @@ export function initAssetRegisters (Vue: GlobalAPI) {
         }
         if (type === 'component' && isPlainObject(definition)) {
           definition.name = definition.name || id
-          definition = this.options._base.extend(definition)
+          definition = this.options._base.extend(definition) // 得到构造器
         }
         if (type === 'directive' && typeof definition === 'function') {
           definition = { bind: definition, update: definition }
         }
+        // 将数据赋值到 options 上
         this.options[type + 's'][id] = definition
         return definition
       }

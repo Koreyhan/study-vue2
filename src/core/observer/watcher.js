@@ -179,6 +179,7 @@ export default class Watcher {
     } else if (this.sync) {
       this.run()
     } else {
+      // 添加更新队列
       queueWatcher(this)
     }
   }
@@ -201,6 +202,12 @@ export default class Watcher {
         // set new value
         const oldValue = this.value
         this.value = value
+        /**
+         * 用户 watcher 的逻辑 (定义的 watch 函数)
+         * this.cb: watch 函数
+         * value: 新值
+         * oldValue: 旧值
+         */
         if (this.user) {
           try {
             this.cb.call(this.vm, value, oldValue)

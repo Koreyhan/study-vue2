@@ -196,7 +196,9 @@ export function defineReactive (
       } else {
         val = newVal
       }
+      // shallow === false 时会把新值变为响应式对象（应对新值是对象的情况，保证所有层级能都响应到）
       childOb = !shallow && observe(newVal)
+      // 派发更新
       dep.notify()
     }
   })

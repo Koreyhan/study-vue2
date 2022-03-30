@@ -11,9 +11,9 @@ let uid = 0
  * directives subscribing to it.
  */
 export default class Dep {
-  static target: ?Watcher;
-  id: number;
-  subs: Array<Watcher>;
+  static target: ?Watcher; // 静态属性 Watcher
+  id: number; // 自增id，每个 Dep 不同
+  subs: Array<Watcher>; // Watcher[]
 
   constructor () {
     this.id = uid++
@@ -21,7 +21,7 @@ export default class Dep {
   }
 
   addSub (sub: Watcher) {
-    this.subs.push(sub)
+    this.subs.push(sub) // 添加 watcher 到 dep.sub 中
   }
 
   removeSub (sub: Watcher) {
@@ -55,11 +55,13 @@ export default class Dep {
 Dep.target = null
 const targetStack = []
 
+// 入栈 - 当前 Watcher
 export function pushTarget (target: ?Watcher) {
   targetStack.push(target)
   Dep.target = target
 }
 
+// 出栈
 export function popTarget () {
   targetStack.pop()
   Dep.target = targetStack[targetStack.length - 1]

@@ -167,6 +167,7 @@ export function defineReactive (
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
+        // 这里会触发 dep 收集依赖 wachter
         dep.depend()
         if (childOb) {
           childOb.dep.depend()

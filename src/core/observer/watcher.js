@@ -22,12 +22,14 @@ let uid = 0
  * A watcher parses an expression, collects dependencies,
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
+ * 需要注意的是，每次渲染都会生成新的 watcher 函数
+ * 同时在 cleanupDeps 的时候，会把 dep 中旧 wacther 清理掉
  */
 export default class Watcher {
-  vm: Component;
+  vm: Component; // 绑定的 vm 实例
   expression: string;
   cb: Function;
-  id: number;
+  id: number; // 自增id
   deep: boolean;
   user: boolean;
   lazy: boolean;
@@ -99,10 +101,15 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    // 设置 target watcher 到 Dep 上
     pushTarget(this)
     let value
     const vm = this.vm
     try {
+      /**
+       * 重点：这个里面会执行 updateComponent 逻辑，生成 vnode 及 patch 更新
+       * render 过程中会进行依赖收集
+       */
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -116,7 +123,11 @@ export default class Watcher {
       if (this.deep) {
         traverse(value)
       }
+      // 弹出 target watcher
       popTarget()
+      /**
+       * 清理旧依赖，保证每次收集的都是最新依赖（如：v-if切换隐藏的数据就不会被收集到了）
+       */
       this.cleanupDeps()
     }
     return value
@@ -127,9 +138,9 @@ export default class Watcher {
    */
   addDep (dep: Dep) {
     const id = dep.id
-    if (!this.newDepIds.has(id)) {
+    if (!this.newDepIds.has(id)) { // 防止重复添加
       this.newDepIds.add(id)
-      this.newDeps.push(dep)
+      this.newDeps.push(dep) // 添加 dep 到 watcher.newDeps(最终>watcher.deps) 中
       if (!this.depIds.has(id)) {
         dep.addSub(this)
       }

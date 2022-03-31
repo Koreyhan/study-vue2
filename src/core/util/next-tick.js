@@ -30,6 +30,9 @@ function flushCallbacks () {
 // or even between bubbling of the same event (#6566).
 let timerFunc
 
+// timerFunc 异步函数内部实现顺序
+// Promise -> MutationObserver -> setImmediate -> setTimeout
+
 // The nextTick behavior leverages the microtask queue, which can be accessed
 // via either native Promise.then or MutationObserver.
 // MutationObserver has wider support, however it is seriously bugged in
@@ -98,6 +101,11 @@ export function nextTick (cb?: Function, ctx?: Object) {
     timerFunc()
   }
   // $flow-disable-line
+  /**
+   * 提供一个不传 cb 的方法，在业务中可以这么用:
+   * nextTick().then(() => {})
+   * 本质是通过 Promise 实现
+   */
   if (!cb && typeof Promise !== 'undefined') {
     return new Promise(resolve => {
       _resolve = resolve

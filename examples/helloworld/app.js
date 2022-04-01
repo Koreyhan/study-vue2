@@ -18,7 +18,9 @@ console.log(myComp)
 var app = new Vue({
   data () {
     return {
-      name: '丽丽'
+      obj: {
+        name: '丽丽'
+      }
     }
   },
 
@@ -30,15 +32,21 @@ var app = new Vue({
     removeTodo: function (todo) {
       this.todos.splice(this.todos.indexOf(todo), 1)
     },
-    click () {
-      this.name = '乖乖'
+    changeText () {
+      this.obj.name = '乖乖'
+    },
+    addCity () {
+      this.$set(this.obj, 'city', '北京')
     }
   },
   
   render (h) {
     return h('section', { id: 'hah' }, [
-      this.name,
-      h('button', { on: { click: this.click } }, '按钮')
+      JSON.stringify(this.obj),
+      '------',
+      `name: ${this.obj.name}`,
+      h('button', { on: { click: this.changeText } }, '修改文案'),
+      h('button', { on: { click: this.addCity } }, '添加城市')
     ])
   }
 })

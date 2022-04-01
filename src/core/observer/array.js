@@ -39,6 +39,7 @@ methodsToPatch.forEach(function (method) {
     }
     if (inserted) ob.observeArray(inserted)
     // notify change
+    // 手动通知更新
     ob.dep.notify()
     return result
   })

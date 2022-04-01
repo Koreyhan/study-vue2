@@ -114,7 +114,7 @@ function initProps (vm: Component, propsOptions: Object) {
 
 /**
  * 初始化 data 数据
- * 1. 对一定 data 函数返回的对象遍历，通过 proxy 把每个值 vm._data.xx 代理到 VM.xx 上
+ * 1. 对一定 data 函数返回的对象遍历，通过 proxy 把每个值 vm._data.xx 代理到 vm.xx 上
  * 2. 调用 observe 方法观测整个 data 的变化，把 data 也变成响应式的，可以通过 vm._data.xx 访问到定义 data 返回函数中的属性
  */
 function initData (vm: Component) {

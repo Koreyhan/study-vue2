@@ -45,6 +45,7 @@ export class Observer {
     this.vmCount = 0
     def(value, '__ob__', this) // 定义 __ob__ 指向 Observer 实例
     if (Array.isArray(value)) {
+      // 数组的更新是通过篡改数组原型方法跟踪的
       if (hasProto) {
         protoAugment(value, arrayMethods)
       } else {
@@ -158,7 +159,11 @@ export function defineReactive (
     val = obj[key]
   }
 
-  let childOb = !shallow && observe(val) // ** 递归定义
+  /**
+   * 重要：递归定义嵌套对象
+   * 返回值childOb: 如果该值(val)也是对象，则其为子对象整体的 Observer 实例
+   */
+  let childOb = !shallow && observe(val)
   // 重点: defineProperty 定义逻辑
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -169,6 +174,7 @@ export function defineReactive (
       if (Dep.target) {
         // 这里会触发 dep 收集依赖 wachter
         dep.depend()
+        // 通知值 Observer 也收集当前 watcher。用于 Vue.set 时通知更新整体值
         if (childOb) {
           childOb.dep.depend()
           if (Array.isArray(value)) {
@@ -205,26 +211,31 @@ export function defineReactive (
 }
 
 /**
+ * 用于 Vue.set & vm.$set
  * Set a property on an object. Adds the new property and
  * triggers change notification if the property doesn't
  * already exist.
  */
 export function set (target: Array<any> | Object, key: any, val: any): any {
+  // 判断不能是 undefined 和 基础类型
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  // 判断符合数组的条件 -> 改为通过数组方法修改
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.length = Math.max(target.length, key)
     target.splice(key, 1, val)
     return val
   }
+  // 判断对象，且key已经在对象上 -> 直接进行修改 (因为已经添加了监听)
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
   }
   const ob = (target: any).__ob__
+  // 判断如果是 vue 实例，或者是根data（ob.vmCount 代表根数据） -> 抛出错误
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid adding reactive properties to a Vue instance or its root $data ' +
@@ -232,11 +243,17 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
+  // 没有ob代表 target 不是响应式对象，是个普通对象 -> 直接赋值
   if (!ob) {
     target[key] = val
     return val
   }
+  // target 是响应式对象 -> 手动添加响应式对象
   defineReactive(ob.value, key, val)
+  /**
+   * ob.dep 代表 target 值的对象的整体依赖（注意非单独key的依赖）
+   * 因为这里是添加了新的属性，所以需要通知整体更新
+   */
   ob.dep.notify()
   return val
 }

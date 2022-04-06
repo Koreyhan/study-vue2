@@ -321,6 +321,7 @@ function initWatch (vm: Component, watch: Object) {
   }
 }
 
+// 创建侦听属性
 function createWatcher (
   vm: Component,
   expOrFn: string | Function,
@@ -363,6 +364,7 @@ export function stateMixin (Vue: Class<Component>) {
   Vue.prototype.$set = set
   Vue.prototype.$delete = del
 
+  // 创建侦听属性的 内部方法
   Vue.prototype.$watch = function (
     expOrFn: string | Function,
     cb: any,
@@ -373,8 +375,9 @@ export function stateMixin (Vue: Class<Component>) {
       return createWatcher(vm, expOrFn, cb, options)
     }
     options = options || {}
-    options.user = true
+    options.user = true // 这里会创建 user watcher
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // immediate 参数默认先执行一遍
     if (options.immediate) {
       try {
         cb.call(vm, watcher.value)

@@ -83,6 +83,7 @@ export default class Watcher {
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
     } else {
+      // user watch（侦听属性） 的 expOrFn 为字符串，所以会走进这里
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = noop
@@ -207,7 +208,7 @@ export default class Watcher {
         const oldValue = this.value
         this.value = value
         /**
-         * 用户 watcher 的逻辑 (定义的 watch 函数)
+         * user watcher 的逻辑 (定义的 watch 函数)
          * this.cb: watch 函数
          * value: 新值
          * oldValue: 旧值

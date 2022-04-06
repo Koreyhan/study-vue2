@@ -23,6 +23,11 @@ var app = new Vue({
       }
     }
   },
+  computed: {
+    greeting () {
+      return '你好' + this.obj.name
+    }
+  },
 
   mounted () {
     console.log(this)
@@ -45,6 +50,8 @@ var app = new Vue({
       JSON.stringify(this.obj),
       '------',
       `name: ${this.obj.name}`,
+      '------',
+      `greeting: ${this.greeting}`,
       h('button', { on: { click: this.changeText } }, '修改文案'),
       h('button', { on: { click: this.addCity } }, '添加城市')
     ])

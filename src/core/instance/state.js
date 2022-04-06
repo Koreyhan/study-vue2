@@ -187,6 +187,7 @@ function initComputed (vm: Component, computed: Object) {
 
   for (const key in computed) {
     const userDef = computed[key]
+    // 计算属性支持函数的对象(get、set)两种形式
     const getter = typeof userDef === 'function' ? userDef : userDef.get
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
@@ -211,6 +212,7 @@ function initComputed (vm: Component, computed: Object) {
     if (!(key in vm)) {
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
+      // 检测 key 值不能和 data、props key冲突
       if (key in vm.$data) {
         warn(`The computed property "${key}" is already defined in data.`, vm)
       } else if (vm.$options.props && key in vm.$options.props) {
@@ -226,6 +228,7 @@ export function defineComputed (
   userDef: Object | Function
 ) {
   const shouldCache = !isServerRendering()
+  // 设置 get、set
   if (typeof userDef === 'function') {
     sharedPropertyDefinition.get = shouldCache
       ? createComputedGetter(key)
@@ -239,6 +242,7 @@ export function defineComputed (
       : noop
     sharedPropertyDefinition.set = userDef.set || noop
   }
+  // 没有设置 set 时，添加使用时的警告
   if (process.env.NODE_ENV !== 'production' &&
       sharedPropertyDefinition.set === noop) {
     sharedPropertyDefinition.set = function () {
@@ -248,16 +252,20 @@ export function defineComputed (
       )
     }
   }
+  // 给vm(对于使用者是this) 添加计算属性
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
+// 创建 计算属性的访问器 函数
 function createComputedGetter (key) {
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
+      // 如果没有值或者需要更新值，先求值
       if (watcher.dirty) {
         watcher.evaluate()
       }
+      // 给当前计算属性的使用者添加依赖
       if (Dep.target) {
         watcher.depend()
       }

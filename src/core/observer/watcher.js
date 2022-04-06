@@ -60,6 +60,7 @@ export default class Watcher {
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
+      // 重点：计算属性时，这里是 true。意味着下面不会立即初始化调用 expOrFn 方法
       this.lazy = !!options.lazy
       this.sync = !!options.sync
       this.before = options.before
@@ -69,6 +70,7 @@ export default class Watcher {
     this.cb = cb
     this.id = ++uid // uid for batching
     this.active = true
+    // dirty 为 true 代表还未求值 (没有调用过 this.get() 方法)
     this.dirty = this.lazy // for lazy watchers
     this.deps = []
     this.newDeps = []
@@ -98,6 +100,7 @@ export default class Watcher {
   }
 
   /**
+   * 注意：求值的过程中会自动收集依赖
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
@@ -175,6 +178,7 @@ export default class Watcher {
   update () {
     /* istanbul ignore else */
     if (this.lazy) {
+      // 当计算属性的依赖变化时，直接将 dirty 设置为 true，下次get会再次求值
       this.dirty = true
     } else if (this.sync) {
       this.run()
@@ -222,6 +226,7 @@ export default class Watcher {
   }
 
   /**
+   * dirty 的 watcher（如计算属性） 求值
    * Evaluate the value of the watcher.
    * This only gets called for lazy watchers.
    */
@@ -231,6 +236,8 @@ export default class Watcher {
   }
 
   /**
+   * 计算属性添加访问依赖用，
+   * 把当前 target watcher 深入添加到 计算属性的 deps 中
    * Depend on all deps collected by this watcher.
    */
   depend () {

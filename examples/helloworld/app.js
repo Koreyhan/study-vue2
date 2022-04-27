@@ -1,19 +1,22 @@
 /* global Vue */
 
-var myComp = Vue.component('my-comp', {
+var MyComp = Vue.component('my-comp', {
   mounted () {
     console.log('my-comp', this)
+  },
+  props: {
+    name: String
   },
   render (h) {
     return h('p', {
       style: {
         backgroundColor: 'red'
       }
-    }, 'app组件')
+    }, 'app组件: ' + this.name)
   }
 })
 
-console.log(myComp)
+console.log('MyComp', MyComp)
 
 var app = new Vue({
   data () {
@@ -53,7 +56,8 @@ var app = new Vue({
       '------',
       `greeting: ${this.greeting}`,
       h('button', { on: { click: this.changeText } }, '修改文案'),
-      h('button', { on: { click: this.addCity } }, '添加城市')
+      h('button', { on: { click: this.addCity } }, '添加城市'),
+      // h(MyComp, { props: { name: this.obj.name } })
     ])
   }
 })

@@ -33,6 +33,13 @@ export const emptyNode = new VNode('', {}, [])
 // 钩子函数名
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
+/**
+ * 对比新旧 vnode 方法，决定后续更新 vnode 的逻辑
+ * 需要满足：
+ * 1. key 相同
+ * 2.1 普通节点 tag 相同 && 同时为注释节点 && 都定义了 data  && 相同的input类型
+ * 2.2 是异步占位符节点 && asyncFactory 函数相同 && asyncFactory.error 定义
+ */
 function sameVnode (a, b) {
   return (
     a.key === b.key && (
@@ -146,7 +153,7 @@ export function createPatchFunction (backend) {
     }
 
     vnode.isRootInsert = !nested // for transition enter check
-    // 如果遇到子组件会进入这里，且子组件节点更新DOM会在这里面完成
+    // 如果是组件vnode会进入这里，且组件节点创建和更新DOM会在这里面完成
     if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
       return
     }
@@ -173,6 +180,7 @@ export function createPatchFunction (backend) {
       vnode.elm = vnode.ns
         ? nodeOps.createElementNS(vnode.ns, tag)
         : nodeOps.createElement(tag, vnode) // 创建DOM
+      // 设置 css scope 用
       setScope(vnode)
 
       /* istanbul ignore if */
@@ -510,6 +518,7 @@ export function createPatchFunction (backend) {
     }
   }
 
+  // 新旧节点相同时，更新 vnode 逻辑
   function patchVnode (
     oldVnode,
     vnode,
@@ -553,7 +562,9 @@ export function createPatchFunction (backend) {
 
     let i
     const data = vnode.data
+    // 组件 vnode 的情况
     if (isDef(data) && isDef(i = data.hook) && isDef(i = i.prepatch)) {
+      // 执行的是 vnode.data.hook.prepatch
       i(oldVnode, vnode)
     }
 
@@ -564,20 +575,23 @@ export function createPatchFunction (backend) {
       if (isDef(i = data.hook) && isDef(i = i.update)) i(oldVnode, vnode)
     }
     if (isUndef(vnode.text)) {
-      if (isDef(oldCh) && isDef(ch)) {
+      if (isDef(oldCh) && isDef(ch)) { // 新旧节点都有 children，调用 updateChildren
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
-      } else if (isDef(ch)) {
+      } else if (isDef(ch)) { // 新节点有 children，旧节点没有
         if (process.env.NODE_ENV !== 'production') {
           checkDuplicateKeys(ch)
         }
+        // 旧节点是文本节点时 => 清空旧内容 & 插入新内容
         if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '')
         addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
-      } else if (isDef(oldCh)) {
+      } else if (isDef(oldCh)) { // 旧节点有 children，新节点没有
+        // 删除旧节点
         removeVnodes(elm, oldCh, 0, oldCh.length - 1)
-      } else if (isDef(oldVnode.text)) {
+      } else if (isDef(oldVnode.text)) { // 新旧都没有 children
+        // 将旧节点文本清空
         nodeOps.setTextContent(elm, '')
       }
-    } else if (oldVnode.text !== vnode.text) {
+    } else if (oldVnode.text !== vnode.text) { // 普通文本节点的情况，直接替换内容
       nodeOps.setTextContent(elm, vnode.text)
     }
     if (isDef(data)) {
@@ -711,12 +725,13 @@ export function createPatchFunction (backend) {
 
   /**
    * 最终的 patch 函数
-   * oldVnode: 旧 vnode 节点，可以不存在或者是一个 DOM 对象 
+   * oldVnode: 旧 vnode 节点 (首次渲染：也可以不存在或者是一个 DOM 对象)
    * vnode: _render 返回的 vnode 节点
    * hydrating: 服务端渲染
    * removeOnly: 给 transition-group 用的
    */
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
+    // 前面if是删除的流程
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
       return
@@ -732,10 +747,10 @@ export function createPatchFunction (backend) {
       createElm(vnode, insertedVnodeQueue)
     } else {
       const isRealElement = isDef(oldVnode.nodeType)
-      if (!isRealElement && sameVnode(oldVnode, vnode)) {
+      if (!isRealElement && sameVnode(oldVnode, vnode)) { // 新旧节点相同 => 执行这里
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
-      } else {
+      } else { // 新旧节点不同 => 执行这里
         if (isRealElement) {
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
@@ -782,9 +797,10 @@ export function createPatchFunction (backend) {
         )
 
         // update parent placeholder node element, recursively
+        // 更新父的占位符节点
         if (isDef(vnode.parent)) {
           let ancestor = vnode.parent
-          const patchable = isPatchable(vnode)
+          const patchable = isPatchable(vnode) // 是否是可挂载的节点
           while (ancestor) {
             for (let i = 0; i < cbs.destroy.length; ++i) {
               cbs.destroy[i](ancestor)

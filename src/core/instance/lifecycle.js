@@ -65,7 +65,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     const prevEl = vm.$el
-    const prevVnode = vm._vnode
+    const prevVnode = vm._vnode // 上一次渲染的 vnode
     // 11=> 记录当前实例到 activeInstance 中
     const restoreActiveInstance = setActiveInstance(vm)
     // this._vnode 是该组件的 vnode
